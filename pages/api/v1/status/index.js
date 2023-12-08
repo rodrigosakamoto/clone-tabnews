@@ -1,5 +1,5 @@
 import { NextApiResponse, NextApiRequest } from "next";
-import database from "../../../../infra/database";
+import database from "infra/database";
 
 /**
  *
