@@ -113,6 +113,7 @@ const userToActivate = await user.findOneById(userId);
   const activatedUser = await user.setFeatures(userId, [
     "create:session",
     "read:session",
+    "update:user",
   ]);
   return activatedUser;
 }
