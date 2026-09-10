@@ -1,10 +1,12 @@
-import { createRouter } from "next-connect";
-import { NextApiResponse, NextApiRequest } from "next";
-import database from "infra/database";
 import controller from "infra/controller";
+import database from "infra/database";
+import authorization from "models/authorization";
+import { NextApiRequest, NextApiResponse } from "next";
+import { createRouter } from "next-connect";
 
 const router = createRouter();
 
+router.use(controller.injectAnonymousOrUser);
 router.get(getHandler);
 
 export default router.handler(controller.errorHandlers);
@@ -15,33 +17,42 @@ export default router.handler(controller.errorHandlers);
  * @param {NextApiResponse} res
  */
 async function getHandler(req, res) {
+  const userTryingToGet = req.context.user;
   const updatedAt = new Date().toISOString();
 
-  const databaseVersionResult = await database.query("SHOW SERVER_VERSION;");
+  const databaseVersionResult = await database.query("SHOW server_version;");
   const databaseVersionValue = databaseVersionResult.rows[0].server_version;
 
   const databaseMaxConnectionsResult = await database.query(
     "SHOW max_connections;",
   );
-  const databaseName = process.env.POSTGRES_DB;
   const databaseMaxConnectionsValue =
     databaseMaxConnectionsResult.rows[0].max_connections;
 
+  const databaseName = process.env.POSTGRES_DB;
   const databaseOpenedConnectionsResult = await database.query({
-    text: "SELECT count(*)::int FROM pg_stat_activity WHERE datname = $1",
+    text: "SELECT count(*)::int FROM pg_stat_activity WHERE datname = $1;",
     values: [databaseName],
   });
   const databaseOpenedConnectionsValue =
     databaseOpenedConnectionsResult.rows[0].count;
 
-  res.status(200).json({
+  const statusObject = {
     updated_at: updatedAt,
     dependencies: {
       database: {
         version: databaseVersionValue,
         max_connections: parseInt(databaseMaxConnectionsValue),
-        open_connections: databaseOpenedConnectionsValue,
+        opened_connections: databaseOpenedConnectionsValue,
       },
     },
-  });
+  };
+
+  const secureOutputValues = authorization.filterOutput(
+    userTryingToGet,
+    "read:status",
+    statusObject,
+  );
+
+  res.status(200).json(secureOutputValues);
 }
