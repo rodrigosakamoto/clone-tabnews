@@ -22,7 +22,7 @@ async function postHandler(req, res) {
   const secureOutputValues = authorization.filterOutput(
     userTryingToPost,
     "read:user",
-    newUser
+    newUser,
   );
 
   return res.status(201).json(secureOutputValues);

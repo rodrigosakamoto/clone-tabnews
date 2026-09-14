@@ -135,10 +135,11 @@ describe("PATCH /api/v1/users/[username]", () => {
       const responseBody = await response.json();
 
       expect(responseBody).toEqual({
-       action: "Verifique se você possui a feature necessária para atualizar outro usuário.",
-       message: "Você não possui permissão para atualizar outro usuário.",
-       name: "ForbiddenError",
-       status_code: 403,
+        action:
+          "Verifique se você possui a feature necessária para atualizar outro usuário.",
+        message: "Você não possui permissão para atualizar outro usuário.",
+        name: "ForbiddenError",
+        status_code: 403,
       });
     });
 
@@ -317,24 +318,30 @@ describe("PATCH /api/v1/users/[username]", () => {
   describe("Privileged user", () => {
     test("With `update:user:others` targeting `defaultUser`", async () => {
       const privilegedUser = await orchestrator.createUser();
-      const activatedPrivilegedUser = await orchestrator.activateUser(privilegedUser);
-      await orchestrator.addFeaturesToUser(privilegedUser, ["update:user:others"]);
+      const activatedPrivilegedUser =
+        await orchestrator.activateUser(privilegedUser);
+      await orchestrator.addFeaturesToUser(privilegedUser, [
+        "update:user:others",
+      ]);
       const privilegedUserSession = await orchestrator.createSession(
         activatedPrivilegedUser.id,
       );
 
       const defaultUser = await orchestrator.createUser();
 
-      const response = await fetch(`http://localhost:3000/api/v1/users/${defaultUser.username}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Cookie: `session_id=${privilegedUserSession.token}`,
+      const response = await fetch(
+        `http://localhost:3000/api/v1/users/${defaultUser.username}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `session_id=${privilegedUserSession.token}`,
+          },
+          body: JSON.stringify({
+            username: "AlteradoPorPrivilegiado",
+          }),
         },
-        body: JSON.stringify({
-          username: "AlteradoPorPrivilegiado",
-        }),
-      });
+      );
 
       expect(response.status).toBe(200);
 
@@ -354,6 +361,5 @@ describe("PATCH /api/v1/users/[username]", () => {
 
       expect(responseBody.updated_at > responseBody.created_at).toBe(true);
     });
-
-  })
+  });
 });

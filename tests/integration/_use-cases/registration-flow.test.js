@@ -109,16 +109,12 @@ describe("Use case: Registration Flow (all successful)", () => {
   });
 
   test("Get user information", async () => {
-    const response = await fetch(
-      "http://localhost:3000/api/v1/user",
-      {
-        method: "GET",
-        headers: {
-          Cookie: `session_id=${createSessionsResponseBody.token}`,
-        },
+    const response = await fetch("http://localhost:3000/api/v1/user", {
+      method: "GET",
+      headers: {
+        Cookie: `session_id=${createSessionsResponseBody.token}`,
       },
-    );
-
+    });
 
     expect(response.status).toBe(200);
 

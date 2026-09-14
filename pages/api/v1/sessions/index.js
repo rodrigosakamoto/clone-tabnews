@@ -36,9 +36,8 @@ async function postHandler(req, res) {
   const secureOutputValues = authorization.filterOutput(
     authenticatedUser,
     "read:session",
-    newSession
+    newSession,
   );
-
 
   return res.status(201).json(secureOutputValues);
 }

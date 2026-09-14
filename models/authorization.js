@@ -11,7 +11,7 @@ const availableFeatures = [
   // SESSION
   "create:session",
   "read:session",
-  
+
   // ACTIVATION TOKEN
   "read:activation_token",
 
@@ -22,7 +22,7 @@ const availableFeatures = [
   // STATUS
   "read:status",
   "read:status:all",
-]
+];
 
 function can(user, feature, resource) {
   validateUser(user);
@@ -82,7 +82,7 @@ function filterOutput(user, feature, resource) {
         expires_at: resource.expires_at,
         created_at: resource.created_at,
         updated_at: resource.updated_at,
-      }
+      };
     }
   }
 
@@ -94,7 +94,7 @@ function filterOutput(user, feature, resource) {
       updated_at: resource.updated_at,
       expires_at: resource.expires_at,
       used_at: resource.used_at,
-    }
+    };
   }
 
   if (feature === "read:migration") {
@@ -133,20 +133,22 @@ function validateUser(user) {
       cause: "É necessário fornecer `user` no model `authorization`",
     });
   }
-};
+}
 
 function validateFeature(feature) {
   if (!feature || !availableFeatures.includes(feature)) {
     throw new InternalServerError({
-      cause: "É necessário fornecer uma `feature` conhecida no model `authorization`",
+      cause:
+        "É necessário fornecer uma `feature` conhecida no model `authorization`",
     });
-  }  
+  }
 }
 
 function validateResource(resource) {
   if (!resource) {
     throw new InternalServerError({
-      cause: "É necessário fornecer um `resource` em `authorization.filterOutput()`",
+      cause:
+        "É necessário fornecer um `resource` em `authorization.filterOutput()`",
     });
   }
 }

@@ -24,8 +24,8 @@ async function getHandler(request, response) {
   const secureOutputValues = authorization.filterOutput(
     userTryingToGet,
     "read:user:self",
-    userFound
-  )
+    userFound,
+  );
 
   response.setHeader(
     "Cache-Control",

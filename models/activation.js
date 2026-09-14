@@ -52,7 +52,8 @@ async function findOneValidById(tokenId) {
 
     if (results.rowCount === 0) {
       throw new NotFoundError({
-        message: "O token de ativação utilizado não foi encontrado no sistema ou expirou.",
+        message:
+          "O token de ativação utilizado não foi encontrado no sistema ou expirou.",
         action: "Faça um novo cadastro.",
       });
     }
@@ -101,7 +102,7 @@ async function markTokenAsUsed(activationTokenId) {
 }
 
 async function activateUserByUserId(userId) {
-const userToActivate = await user.findOneById(userId);
+  const userToActivate = await user.findOneById(userId);
 
   if (!authorization.can(userToActivate, "read:activation_token")) {
     throw new ForbiddenError({
