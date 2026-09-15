@@ -1,7 +1,7 @@
-import webserver from "infra/webserver";
-import session from "models/session";
+import webserver from "infra/webserver.js";
+import session from "models/session.js";
 import setCookieParser from "set-cookie-parser";
-import orchestrator from "tests/orchestrator";
+import orchestrator from "tests/orchestrator.js";
 import { version as uuidVersion } from "uuid";
 
 beforeAll(async () => {
@@ -131,17 +131,31 @@ describe("POST /api/v1/sessions", () => {
       expect(Date.parse(responseBody.created_at)).not.toBeNaN();
       expect(Date.parse(responseBody.updated_at)).not.toBeNaN();
 
+      // `expires_at` é calculado na aplicação antes da persistência.
+      // `created_at` é calculado depois na camada do banco de dados.
+      // Por isso, o tempo real entre as duas datas pode ficar ligeiramente
+      // menor do que o tempo de expiração configurado e não bater 30 dias nos
+      // milissegundos caso seja calculado apenas `expires_at` - `created_at`.
+      // Então a ideia é garantir que no momento `expires_at` seja maior que
+      // `created_at`, e também que possa existir distância de até 5 segundo
+      // entre as duas datas para cobrir o caso do banco sofrer algum load
+      // inesperado nos testes.
+
       const expiresAt = new Date(responseBody.expires_at);
       const createdAt = new Date(responseBody.created_at);
 
-      expiresAt.setMilliseconds(0);
-      createdAt.setMilliseconds(0);
+      expect(expiresAt >= createdAt).toBe(true);
 
-      expect(expiresAt - createdAt).toBe(session.EXPIRATION_IN_MILLISECONDS);
+      const actualLifetimeInMilliseconds = expiresAt - createdAt;
+      const lifetimeDifferenceInMilliseconds =
+        session.EXPIRATION_IN_MILLISECONDS - actualLifetimeInMilliseconds;
+
+      expect(lifetimeDifferenceInMilliseconds).toBeLessThanOrEqual(5000);
 
       const parsedSetCookie = setCookieParser(response, {
         map: true,
       });
+
       expect(parsedSetCookie.session_id).toEqual({
         name: "session_id",
         value: responseBody.token,
