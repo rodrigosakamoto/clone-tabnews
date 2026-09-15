@@ -1,15 +1,15 @@
 import * as cookie from "cookie";
-import session from "models/session";
 import {
+  ForbiddenError,
   InternalServerError,
   MethodNotAllowedError,
-  ValidationError,
   NotFoundError,
   UnauthorizedError,
-  ForbiddenError,
+  ValidationError,
 } from "infra/errors";
-import user from "models/user";
 import authorization from "models/authorization";
+import session from "models/session";
+import user from "models/user";
 
 function onErrorHandler(error, req, res) {
   if (
@@ -39,17 +39,18 @@ function onNoMatchHandler(req, res) {
   res.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
-async function setSessionCookie(sessionToken, response) {
+function setSessionCookie(sessionToken, response) {
   const setCookie = cookie.serialize("session_id", sessionToken, {
     path: "/",
     maxAge: session.EXPIRATION_IN_MILLISECONDS / 1000,
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
+    sameSite: "lax",
   });
   response.setHeader("Set-Cookie", setCookie);
 }
 
-async function clearSessionCookie(response) {
+function clearSessionCookie(response) {
   const setCookie = cookie.serialize("session_id", "invalid", {
     path: "/",
     maxAge: -1,
